@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Map of Us 🖤 Vampir Gotik Kan Kırmızısı Anılarımız</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- FontAwesome Icons & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .font-gothic {
+            font-family: 'Cinzel', serif;
+        }
+
+        body {
+            background-color: #020103;
+            color: #e2e8f0;
+        }
+
+        /* Dark Vampir Blood Red Text Styling */
+        .text-solid-blood {
+            color: #991b1b;
+            text-shadow: 0 0 14px rgba(153, 27, 27, 0.75), 0 0 28px rgba(69, 10, 10, 0.9);
+        }
+
+        /* Glassmorphism Vampire Panels with Crimson Blood Borders */
+        .glass-panel {
+            background: rgba(10, 3, 5, 0.95);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(127, 29, 29, 0.65);
+            box-shadow: 0 10px 35px 0 rgba(0, 0, 0, 0.95), inset 0 0 15px rgba(69, 10, 10, 0.5);
+        }
+
+        .glass-panel-hover:hover {
+            border-color: rgba(185, 28, 28, 0.85);
+            box-shadow: 0 0 25px rgba(127, 29, 29, 0.7);
+        }
+
+        /* Leaflet Dark Popup Customization */
+        .leaflet-popup-content-wrapper {
+            background: rgba(12, 2, 4, 0.97) !important;
+            backdrop-filter: blur(16px) !important;
+            border: 1px solid rgba(153, 27, 27, 0.75) !important;
+            border-radius: 20px !important;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.98), 0 0 25px rgba(127, 29, 29, 0.7) !important;
+            color: #f1f5f9 !important;
+            padding: 6px;
+            max-width: 340px !important;
+        }
+
+        .leaflet-popup-content {
+            margin: 10px !important;
+            width: 310px !important;
+        }
+
+        .leaflet-popup-tip {
+            background: rgba(12, 2, 4, 0.97) !important;
+            border: 1px solid rgba(153, 27, 27, 0.75) !important;
+        }
+
+        /* Floating Background Ghosts over Map */
+        .ghost-bg-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 400;
+            overflow: hidden;
+        }
+
+        .floating-ghost-item {
+            position: absolute;
+            opacity: 0.20;
+            filter: drop-shadow(0 0 12px rgba(127, 29, 29, 0.95));
+            animation: floatAround linear infinite;
+        }
+
+        @keyframes floatAround {
+            0% {
+                transform: translateY(105vh) translateX(0) scale(0.8) rotate(0deg);
+                opacity: 0;
+            }
+            15% { opacity: 0.25; }
+            85% { opacity: 0.25; }
+            100% {
+                transform: translateY(-15vh) translateX(80px) scale(1.15) rotate(20deg);
+                opacity: 0;
+            }
+        }
+
+        /* Past Memory Pin (Deep Vampire Blood Red) */
+        .custom-pin-past {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            background: radial-gradient(circle, #7f1d1d 0%, #280202 100%);
+            border: 2px solid #991b1b;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            box-shadow: 0 0 20px rgba(127, 29, 29, 0.95), inset 0 0 8px rgba(254, 202, 202, 0.25);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .custom-pin-past i {
+            transform: rotate(45deg);
+            color: #fca5a5;
+            font-size: 15px;
+            text-shadow: 0 0 8px rgba(153, 27, 27, 0.95);
+        }
+        .custom-pin-past:hover {
+            transform: rotate(-45deg) scale(1.35);
+            background: radial-gradient(circle, #991b1b 0%, #450a0a 100%);
+            box-shadow: 0 0 30px rgba(185, 28, 28, 1);
+        }
+
+        /* Future Memory Pin (Dark Gothic Violet) */
+        .custom-pin-future {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            background: radial-gradient(circle, #581c87 0%, #1e0238 100%);
+            border: 2px solid #7e22ce;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            box-shadow: 0 0 20px rgba(126, 34, 206, 0.9), inset 0 0 8px rgba(233, 213, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .custom-pin-future i {
+            transform: rotate(45deg);
+            color: #e9d5ff;
+            font-size: 14px;
+            text-shadow: 0 0 8px rgba(168, 85, 247, 0.95);
+        }
+        .custom-pin-future:hover {
+            transform: rotate(-45deg) scale(1.35);
+            background: radial-gradient(circle, #7e22ce 0%, #3b0764 100%);
+            box-shadow: 0 0 30px rgba(168, 85, 247, 1);
+        }
+
+        /* Intro Entrance Animations */
+        @keyframes introFadeIn {
+            0% { opacity: 0; transform: scale(0.96); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .animate-intro-container {
+            animation: introFadeIn 0.8s ease-out forwards;
+        }
+
+        @keyframes introGhostPulse {
+            0%, 100% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 25px rgba(127,29,29,0.9)); }
+            50% { transform: scale(1.08) translateY(-12px); filter: drop-shadow(0 0 45px rgba(185,28,28,1)); }
+        }
+        .animate-intro-ghost {
+            animation: introGhostPulse 3.2s ease-in-out infinite;
+        }
+
+        /* Spider Crawl Animation */
+        @keyframes spiderCrawl {
+            0% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(16px) rotate(-6deg); }
+            50% { transform: translateY(32px) rotate(4deg); }
+            75% { transform: translateY(18px) rotate(-3deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+        }
+        .animate-spider-crawl {
+            animation: spiderCrawl 5.5s ease-in-out infinite;
+        }
+
+        @keyframes mascotHover {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(3deg); }
+        }
+        .animate-mascot {
+            animation: mascotHover 3.2s ease-in-out infinite;
+        }
+
+        /* Custom Dark Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #030104; }
+        ::-webkit-scrollbar-thumb {
+            background: #450a0a;
+            border-radius: 8px;
+            border: 1px solid #7f1d1d;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: #7f1d1d; }
+
+        /* Pin Popup Not Kutusu Sabit Boyut ve Scroll */
+        .popup-note-scroll {
+            max-height: 100px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #7f1d1d #030104;
+        }
+
+        .toast-slide {
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .leaflet-tile-pane {
+            filter: brightness(0.85) contrast(1.2) hue-rotate(330deg);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col relative bg-[#020103]">
+
+    <div id="toastContainer" class="fixed top-4 left-1/2 -translate-x-1/2 z-[5500] pointer-events-none flex flex-col items-center gap-2"></div>
+
+    <!-- Vampir Gotik Giriş Animasyonu Ekranı (Intro Overlay) -->
+    <div id="introOverlay" class="fixed inset-0 z-[5000] bg-[#020103] flex flex-col items-center justify-center p-6 transition-all duration-700">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-950/60 via-black to-black opacity-90 pointer-events-none"></div>
+
+        <!-- Asılı Örümcek Ağı & Örümcek -->
+        <div class="absolute top-0 left-8 md:left-24 z-10 pointer-events-none animate-spider-crawl flex flex-col items-center">
+            <div class="w-[1.5px] h-32 md:h-40 bg-gradient-to-b from-red-950/80 via-red-800/60 to-red-600/90 shadow-[0_0_8px_rgba(153,27,27,0.9)]"></div>
+            <svg width="46" height="46" viewBox="0 0 100 100" fill="none" class="filter drop-shadow-[0_0_12px_rgba(153,27,27,0.95)] -mt-1">
+                <path d="M50 45 C30 20 10 25 5 35 M50 45 C30 35 10 45 5 55 M50 55 C30 65 10 75 8 85 M50 55 C30 75 15 85 15 95" stroke="#7f1d1d" stroke-width="4.5" stroke-linecap="round"/>
+                <path d="M50 45 C70 20 90 25 95 35 M50 45 C70 35 90 45 95 55 M50 55 C70 65 90 75 92 85 M50 55 C70 75 85 85 85 95" stroke="#7f1d1d" stroke-width="4.5" stroke-linecap="round"/>
+                <circle cx="50" cy="42" r="12" fill="#280202" stroke="#7f1d1d" stroke-width="2.5"/>
+                <circle cx="50" cy="62" r="18" fill="#1c0101" stroke="#7f1d1d" stroke-width="2.5"/>
+                <circle cx="45" cy="38" r="2.5" fill="#991b1b"/>
+                <circle cx="55" cy="38" r="2.5" fill="#991b1b"/>
+                <circle cx="48" cy="42" r="1.5" fill="#fca5a5"/>
+                <circle cx="52" cy="42" r="1.5" fill="#fca5a5"/>
+                <path d="M50 52 L56 62 L50 72 L44 62 Z" fill="#991b1b"/>
+            </svg>
+        </div>
+
+        <div class="relative z-10 flex flex-col items-center text-center max-w-md w-full animate-intro-container">
+            <!-- Vampir Gotik Hayalet Maskotu -->
+            <div class="w-36 h-36 md:w-44 md:h-44 mb-6 animate-intro-ghost cursor-pointer" onclick="triggerIntroHearts()">
+                <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full filter drop-shadow-[0_0_20px_rgba(127,29,29,0.8)]">
+                    <path d="M100 20C60 20 40 50 40 90V160C40 170 50 175 58 168C65 162 75 162 82 168C90 175 100 175 108 168C115 162 125 162 132 168C140 175 150 175 158 168C165 160 170 165 170 155V90C170 50 140 20 100 20Z" fill="url(#introVampGrad)" stroke="#7f1d1d" stroke-width="4"/>
+                    <circle cx="75" cy="95" r="8" fill="#991b1b"/>
+                    <circle cx="125" cy="95" r="8" fill="#991b1b"/>
+                    <ellipse cx="78" cy="85" rx="7" ry="10" fill="#020103"/>
+                    <ellipse cx="122" cy="85" rx="7" ry="10" fill="#020103"/>
+                    <circle cx="80" cy="82" r="3" fill="#fca5a5"/>
+                    <circle cx="124" cy="82" r="3" fill="#fca5a5"/>
+                    <!-- Vampire Fangs -->
+                    <path d="M92 102 Q100 112 108 102" stroke="#020103" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+                    <path d="M90 102 L93 110 L96 102 Z" fill="#ffffff"/>
+                    <path d="M104 102 L107 110 L110 102 Z" fill="#ffffff"/>
+                    <path d="M100 128 L106 141 L120 143 L109 153 L112 167 L100 159 L88 167 L91 153 L80 143 L94 141 Z" fill="#7f1d1d" stroke="#fca5a5" stroke-width="1.5"/>
+
+                    <defs>
+                        <linearGradient id="introVampGrad" x1="40" y1="20" x2="170" y2="170" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#280202"/>
+                            <stop offset="0.5" stop-color="#7f1d1d"/>
+                            <stop offset="1" stop-color="#190000"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+
+            <div class="glass-panel p-6 rounded-3xl border border-red-900/80 shadow-[0_0_50px_rgba(127,29,29,0.6)] w-full mb-6">
+                <span class="text-[11px] font-bold text-red-400 uppercase tracking-widest block mb-1">Karanlığın İçinden Bir Fısıltı 🖤</span>
+                <h2 class="font-gothic text-2xl md:text-3xl font-extrabold text-solid-blood tracking-wide my-2">
+                    SENİ ÇOK SEVİYORUM...
+                </h2>
+                <p class="text-xs md:text-sm text-rose-200/90 italic font-medium leading-relaxed mt-2">
+                    "Adımladığımız her şehir, kalbime kazınan her anı ve gelecekte kurduğumuz tüm hayaller seninle anlamlı."
+                </p>
+            </div>
+
+            <button id="startIntroBtn" onclick="dismissIntro()" class="w-full bg-gradient-to-r from-red-950 via-red-900 to-red-950 hover:from-red-900 hover:to-red-800 text-rose-100 font-bold py-3.5 px-6 rounded-2xl border border-red-700/80 shadow-[0_0_30px_rgba(153,27,27,0.7)] transition-all transform active:scale-95 flex items-center justify-center gap-3 text-sm cursor-pointer">
+                <span>The Map of Us</span>
+                <i class="fa-solid fa-heart text-red-500 animate-pulse"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="glass-panel z-[1050] px-3 md:px-6 py-2.5 flex items-center justify-between border-b border-red-950/80 relative">
+        <div class="flex items-center gap-2.5">
+            <button onclick="toggleSidebar()" class="glass-panel text-rose-200 px-3.5 py-2 rounded-xl border border-red-900/60 hover:bg-red-950/60 transition flex items-center gap-2 text-xs font-semibold shadow-md active:scale-95 cursor-pointer">
+                <i class="fa-solid fa-bars-staggered text-red-500 text-sm"></i>
+                <span class="hidden sm:inline">Anılarımız & Geleceğimiz</span>
+                <span id="headerMemoryBadge" class="bg-red-950 text-red-300 text-[10px] px-2 py-0.5 rounded-full border border-red-800/60 font-bold">0</span>
+            </button>
+
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-red-950/80 border border-red-800/60 flex items-center justify-center text-red-500 shadow-[0_0_15px_rgba(127,29,29,0.6)]">
+                    <i class="fa-solid fa-ghost text-lg animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="font-gothic text-base md:text-xl font-extrabold tracking-wider text-solid-blood">
+                        THE MAP OF US 🖤
+                    </h1>
+                    <p class="text-[10px] md:text-[11px] text-red-400/90 font-semibold hidden md:block">Anılarımız & Gelecek Yolculuğumuz</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button onclick="openSettingsModal()" class="glass-panel text-rose-200 text-xs px-3.5 py-2 rounded-xl border border-red-800/60 hover:bg-red-950/70 transition flex items-center gap-1.5 font-bold active:scale-95 cursor-pointer shadow-md">
+                <i class="fa-solid fa-gear text-red-400"></i>
+                <span>Ayarlar</span>
+            </button>
+
+            <button onclick="openLetterModal()" class="bg-gradient-to-r from-red-950 via-red-900 to-red-950 hover:from-red-900 hover:to-red-800 text-rose-100 text-xs md:text-sm px-3.5 py-2 rounded-xl shadow-[0_0_20px_rgba(127,29,29,0.7)] font-bold transition-all flex items-center gap-2 active:scale-95 border border-red-700/60 cursor-pointer">
+                <i class="fa-solid fa-envelope-open-text text-red-300"></i>
+                <span>Mektubum 🖤</span>
+                <i class="fa-solid fa-droplet text-red-500 text-xs ml-0.5"></i>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex-1 flex relative overflow-hidden z-10">
+
+        <!-- Sol Açılır Çekmece (Sidebar Drawer) -->
+        <aside id="sidebar" class="fixed top-[61px] bottom-0 left-0 w-85 max-w-[85vw] glass-panel z-[2000] transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col border-r border-red-950/80 shadow-2xl">
+            <div class="p-4 border-b border-red-950/60 flex items-center justify-between bg-red-950/30">
+                <div class="flex items-center gap-2 text-red-400 font-bold text-sm tracking-wide">
+                    <i class="fa-solid fa-map-location-dot text-red-500"></i>
+                    <h2>YOLCULUĞUMUZ (<span id="memoryCount">0</span>)</h2>
+                </div>
+                <button onclick="toggleSidebar(false)" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-red-950/50 transition cursor-pointer" title="Menüyü Kapat">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Filtre Sekmeleri -->
+            <div class="p-2 border-b border-red-950/40 bg-red-950/20 flex gap-1 text-[11px] font-semibold">
+                <button onclick="setFilterType('all')" id="filterTab-all" class="flex-1 py-1.5 rounded-lg bg-red-950 text-white border border-red-800/60 text-center transition cursor-pointer">
+                    Tümü
+                </button>
+                <button onclick="setFilterType('past')" id="filterTab-past" class="flex-1 py-1.5 rounded-lg bg-red-950/40 text-rose-300 border border-transparent hover:border-red-800/40 text-center transition flex items-center justify-center gap-1 cursor-pointer">
+                    <span class="w-2 h-2 rounded-full bg-red-700 inline-block"></span> Geçmiş
+                </button>
+                <button onclick="setFilterType('future')" id="filterTab-future" class="flex-1 py-1.5 rounded-lg bg-purple-950/40 text-purple-200 border border-transparent hover:border-purple-800/40 text-center transition flex items-center justify-center gap-1 cursor-pointer">
+                    <span class="w-2 h-2 rounded-full bg-purple-500 inline-block"></span> Gelecek
+                </button>
+            </div>
+
+            <!-- Arama Çubuğu -->
+            <div class="p-3 border-b border-red-950/40 bg-red-950/10">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-red-500/70 text-xs"></i>
+                    <input type="text" id="searchInput" oninput="filterMemories()" placeholder="Anılarda veya şarkılarda ara..." class="w-full pl-8 pr-3 py-1.5 rounded-xl bg-red-950/50 border border-red-900/50 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-red-600">
+                </div>
+            </div>
+
+            <!-- Anı Listesi Kapsayıcısı -->
+            <div id="memoryList" class="flex-1 overflow-y-auto p-3 space-y-3"></div>
+
+            <div class="p-3 bg-red-950/50 border-t border-red-950/60 text-xs text-red-300 flex items-center gap-2">
+                <i class="fa-solid fa-circle-info text-red-500 text-sm flex-shrink-0"></i>
+                <span>Haritadaki bir noktaya tıklayarak yeni anı ekleyebilirsin!</span>
+            </div>
+        </aside>
+
+        <!-- Harita Alanı -->
+        <main class="flex-1 h-full w-full relative">
+            <div id="map" class="h-full w-full bg-[#020103]"></div>
+            <div class="ghost-bg-container" id="ghostBg"></div>
+
+            <!-- Harita Üst Butonları -->
+            <div class="absolute top-4 right-4 z-[500] flex flex-col gap-2">
+                <button onclick="triggerAddPinCenter()" class="glass-panel text-rose-100 px-3.5 py-2 rounded-xl shadow-lg hover:border-red-600 transition flex items-center gap-2 text-xs font-bold border border-red-800/70 bg-red-950/80 active:scale-95 cursor-pointer">
+                    <i class="fa-solid fa-location-dot text-red-500 text-sm"></i>
+                    <span>Yeni Nokta Ekle 📍</span>
+                </button>
+
+                <button onclick="zoomToTurkey()" class="glass-panel text-rose-200 px-3.5 py-2 rounded-xl shadow-lg hover:border-red-700 transition flex items-center gap-2 text-xs font-semibold border border-red-900/50 active:scale-95 cursor-pointer">
+                    <i class="fa-solid fa-compass text-red-500"></i>
+                    <span>Türkiye'yi Ortala</span>
+                </button>
+
+                <button id="floatingSidebarBtn" onclick="toggleSidebar(true)" class="glass-panel text-rose-200 px-3.5 py-2 rounded-xl shadow-lg hover:border-red-700 transition flex items-center gap-2 text-xs font-semibold border border-red-900/50 active:scale-95 cursor-pointer">
+                    <i class="fa-solid fa-bookmark text-red-500"></i>
+                    <span>Anıları Göster</span>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Hayalet Maskot Widget'ı -->
+    <div id="ghostOverlay" class="fixed bottom-6 right-6 z-[600] pointer-events-none hidden">
+        <div class="ghost-pop-in flex flex-col md:flex-row items-end md:items-center gap-3">
+            <div class="pointer-events-auto glass-panel rounded-2xl p-4 shadow-2xl max-w-xs md:max-w-sm relative border border-red-900/60">
+                <button onclick="hideGhost()" class="absolute -top-2 -right-2 bg-red-950 text-rose-200 w-6 h-6 rounded-full flex items-center justify-center text-xs shadow border border-red-700/60 hover:bg-red-900 transition cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="flex items-center gap-1.5 mb-1.5">
+                    <span class="text-[10px] font-bold text-red-400 uppercase tracking-wider flex items-center gap-1 bg-red-950/90 px-2 py-0.5 rounded-md border border-red-800/50">
+                        <i class="fa-solid fa-ghost"></i> Gece Hayaleti
+                    </span>
+                    <span id="ghostTag" class="text-[10px] bg-red-950/60 text-rose-300 px-2 py-0.5 rounded-md font-medium border border-red-900/40">Fısıltı</span>
+                </div>
+                <p id="ghostMessage" class="text-sm font-medium text-gray-200 italic leading-relaxed">
+                    "Burası birlikte adımlayacağımız harika bir yolculuk!" 👻🖤
+                </p>
+            </div>
+
+            <div class="pointer-events-auto w-24 h-24 md:w-28 md:h-28 animate-mascot cursor-pointer filter drop-shadow-[0_0_18px_rgba(127,29,29,0.9)]" onclick="ghostReact()">
+                <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                    <path d="M100 20C60 20 40 50 40 90V160C40 170 50 175 58 168C65 162 75 162 82 168C90 175 100 175 108 168C115 162 125 162 132 168C140 175 150 175 158 168C165 160 170 165 170 155V90C170 50 140 20 100 20Z" fill="url(#ghostDarkGrad)" stroke="#7f1d1d" stroke-width="3.5"/>
+                    <circle cx="75" cy="95" r="7" fill="#7f1d1d" opacity="0.85"/>
+                    <circle cx="125" cy="95" r="7" fill="#7f1d1d" opacity="0.85"/>
+                    <ellipse cx="78" cy="85" rx="7" ry="10" fill="#020103"/>
+                    <ellipse cx="122" cy="85" rx="7" ry="10" fill="#020103"/>
+                    <circle cx="80" cy="82" r="3" fill="#fca5a5"/>
+                    <circle cx="124" cy="82" r="3" fill="#fca5a5"/>
+                    <path d="M92 102 Q100 112 108 102" stroke="#020103" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+                    <path d="M100 125 L106 138 L120 140 L109 150 L112 164 L100 156 L88 164 L91 150 L80 140 L94 138 Z" fill="#7f1d1d" stroke="#fca5a5" stroke-width="1.5"/>
+
+                    <defs>
+                        <linearGradient id="ghostDarkGrad" x1="40" y1="20" x2="170" y2="170" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#280202"/>
+                            <stop offset="0.5" stop-color="#581c1c"/>
+                            <stop offset="1" stop-color="#190000"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ayarlar Modalı -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-[2150] flex items-center justify-center p-4 hidden">
+        <div class="glass-panel rounded-3xl max-w-md w-full p-6 shadow-2xl border border-red-900/70 relative">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-red-950/80">
+                <h3 class="text-base font-extrabold text-solid-blood flex items-center gap-2">
+                    <i class="fa-solid fa-gear text-red-500"></i> Ayarlar & Müzik
+                </h3>
+                <button onclick="closeSettingsModal()" class="text-gray-400 hover:text-white p-1 cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div class="p-4 rounded-2xl bg-red-950/40 border border-red-800/60 flex items-center justify-between">
+                    <div>
+                        <h4 class="text-xs font-bold text-rose-200 uppercase tracking-wider flex items-center gap-1.5">
+                            <i id="soundIcon" class="fa-solid fa-wind text-red-400"></i> Arka Plan Sesleri
+                        </h4>
+                        <p class="text-[11px] text-gray-400 mt-0.5">Gece rüzgarı ve ürpertici hayalet sesleri</p>
+                    </div>
+
+                    <button id="soundToggleBtn" onclick="toggleSound()" class="px-3.5 py-2 rounded-xl bg-red-950 hover:bg-red-900 text-white font-bold text-xs shadow border border-red-700 transition flex items-center gap-2 cursor-pointer">
+                        <span id="soundStatusText">Açık 🔊</span>
+                    </button>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-purple-950/30 border border-purple-900/50">
+                    <h4 class="text-xs font-bold text-purple-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <i class="fa-solid fa-database"></i> Yedek İndir / Yükle (.json)
+                    </h4>
+                    <p class="text-[11px] text-gray-400 mb-3">
+                        Tüm anılarınızı, fotoğraflarınızı, şarkılarınızı ve mektubunuzu yedekleyebilir veya yedeğinizi yükleyebilirsiniz.
+                    </p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="exportJsonBackup()" class="py-2.5 bg-purple-950 hover:bg-purple-900 text-purple-200 border border-purple-800/60 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-file-export"></i> Yedeği İndir
+                        </button>
+                        
+                        <label class="py-2.5 bg-purple-900 hover:bg-purple-800 text-white border border-purple-600/80 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-center shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+                            <i class="fa-solid fa-file-import"></i> Yedeği Yükle
+                            <input type="file" accept=".json" onchange="importJsonBackup(event)" class="hidden">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-red-950/50 border border-red-900/60">
+                    <h4 class="text-xs font-bold text-rose-200 mb-1">HTML Olarak İndir</h4>
+                    <p class="text-[11px] text-gray-400 mb-2.5">
+                        İnternet olmasa bile doğrudan tıklayıp açabileceğiniz çevrimdışı HTML sürümünü indirir.
+                    </p>
+                    <button onclick="downloadSelfContainedHtml()" class="w-full py-2.5 bg-gradient-to-r from-red-950 to-red-900 hover:from-red-900 hover:to-red-800 text-white font-bold text-xs rounded-xl shadow border border-red-700/60 transition flex items-center justify-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-download"></i> Anılar Dahil HTML İndir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mektup Modalı -->
+    <div id="letterModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-[2100] flex items-center justify-center p-4 hidden">
+        <div class="glass-panel rounded-3xl max-w-xl w-full p-6 md:p-8 shadow-2xl border border-red-900/60 relative overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-3 pb-3 border-b border-red-950/80">
+                <h3 class="text-xl font-extrabold text-solid-blood flex items-center gap-2">
+                    <i class="fa-solid fa-envelope-open-text text-red-500"></i> Genel Mektubum 🖤
+                </h3>
+                <button onclick="closeLetterModal()" class="text-gray-400 hover:text-white p-1 cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto pr-1 space-y-4">
+                <div class="bg-red-950/30 border border-red-900/40 p-4 rounded-2xl relative">
+                    <p class="text-xs text-red-400 font-bold mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+                        <i class="fa-solid fa-heart text-red-500"></i> Kalbimden Gelen Sözler
+                    </p>
+                    <textarea id="letterContent" rows="12" placeholder="Sevgiline buraya mektubunu yazabilirsin..." class="w-full bg-transparent text-rose-100 text-sm leading-relaxed border-none focus:outline-none resize-none italic font-medium"></textarea>
+                </div>
+            </div>
+
+            <div class="pt-3 mt-2 border-t border-red-950/80 flex items-center justify-between gap-3">
+                <span id="letterSavedStatus" class="text-xs text-emerald-400 font-medium hidden flex items-center gap-1">
+                    <i class="fa-solid fa-check-circle"></i> Mektup Kaydedildi!
+                </span>
+                <div class="flex gap-2 ml-auto">
+                    <button type="button" onclick="closeLetterModal()" class="px-4 py-2 rounded-xl border border-red-950 text-gray-300 text-xs font-semibold hover:bg-red-950/40 transition cursor-pointer">Kapat</button>
+                    <button type="button" onclick="saveLetter()" class="px-4 py-2 rounded-xl bg-red-950 text-white text-xs font-semibold hover:bg-red-900 shadow-[0_0_15px_rgba(127,29,29,0.6)] transition flex items-center gap-1.5 border border-red-700/50 cursor-pointer">
+                        <i class="fa-solid fa-floppy-disk"></i> Kaydet 🖤
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Anı / Nokta Ekleme ve Düzenleme Modalı -->
+    <div id="addMemoryModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-[2100] flex items-center justify-center p-4 hidden">
+        <div class="glass-panel rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-red-900/60 relative max-h-[92vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-red-950/80">
+                <h3 id="modalHeaderTitle" class="text-lg font-extrabold text-solid-blood flex items-center gap-2">
+                    <i class="fa-solid fa-map-pin text-red-500"></i> Şehre Özel Anı & Mektup Ekle
+                </h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white p-1 cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="memoryForm" class="space-y-4">
+                <input type="hidden" id="editingId" value="">
+                <input type="hidden" id="lat">
+                <input type="hidden" id="lng">
+
+                <div>
+                    <label class="block text-xs font-bold text-red-400 uppercase tracking-wider mb-1.5">Nokta Türü</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="memoryType" value="past" checked class="peer sr-only">
+                            <div class="p-2.5 rounded-xl border border-red-900/50 bg-red-950/40 text-rose-200 text-xs text-center font-semibold peer-checked:border-red-600 peer-checked:bg-red-950/90 peer-checked:text-white flex items-center justify-center gap-2 transition">
+                                <i class="fa-solid fa-heart text-red-500"></i>
+                                <span>Yaşanmış Anı 🖤</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="memoryType" value="future" class="peer sr-only">
+                            <div class="p-2.5 rounded-xl border border-purple-900/50 bg-purple-950/30 text-purple-200 text-xs text-center font-semibold peer-checked:border-purple-500 peer-checked:bg-purple-900/70 peer-checked:text-white flex items-center justify-center gap-2 transition">
+                                <i class="fa-solid fa-star text-purple-400"></i>
+                                <span>Gelecek Hayalimiz ✨</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-red-400 uppercase tracking-wider mb-1">Başlık</label>
+                    <input type="text" id="title" required placeholder="Örn: Galata Kulesi Altında Sarılmak" class="w-full px-3.5 py-2.5 rounded-xl bg-red-950/40 border border-red-900/50 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-red-600 text-sm">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label id="dateLabel" class="block text-xs font-bold text-red-400 uppercase tracking-wider mb-1">Tarih</label>
+                        <input type="date" id="date" required class="w-full px-3.5 py-2.5 rounded-xl bg-red-950/40 border border-red-900/50 text-gray-100 focus:outline-none focus:border-red-600 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-red-400 uppercase tracking-wider mb-1">Konum / Şehir</label>
+                        <input type="text" id="locationName" placeholder="Örn: İstanbul / Galata" class="w-full px-3.5 py-2.5 rounded-xl bg-red-950/40 border border-red-900/50 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-red-600 text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-red-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+                        <span>Şehre Özel Mektup / Notunuz 💌</span>
+                        <span class="text-[10px] text-gray-400 italic">Uzun yazabilirsiniz</span>
+                    </label>
+                    <textarea id="note" rows="5" required placeholder="Bu şehir için tüm hissettiklerini ve mektubunu yazabilirsin..." class="w-full px-3.5 py-2.5 rounded-xl bg-red-950/40 border border-red-900/50 text-rose-100 placeholder-gray-500 focus:outline-none focus:border-red-600 text-sm leading-relaxed"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-red-400 uppercase tracking-wider mb-1">Anı Şarkısı 🎵</label>
+                    <input type="text" id="songTitle" placeholder="Örn: Yüzyüzeyken Konuşuruz - Dinle Beni Bi" class="w-full px-3.5 py-2.5 rounded-xl bg-red-950/40 border border-red-900/50 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-red-600 text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-red-400 uppercase tracking-wider mb-1">Anı Fotoğrafı 📷 (İsteğe Bağlı)</label>
+                    <div class="space-y-2">
+                        <input type="file" id="photoFileInput" accept="image/*" class="w-full text-xs text-gray-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-red-950 file:text-red-300 hover:file:bg-red-900 cursor-pointer">
+                        <input type="text" id="imageUrl" placeholder="veya Fotoğraf Bağlantısı (URL)" class="w-full px-3.5 py-2 rounded-xl bg-red-950/40 border border-red-900/50 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-red-600 text-xs">
+                    </div>
+                    <div id="photoPreviewContainer" class="hidden mt-2 relative rounded-xl overflow-hidden border border-red-900/60 h-28 bg-black/60 flex items-center justify-center">
+                        <img id="photoPreviewImg" class="w-full h-full object-cover">
+                        <button type="button" onclick="clearPhotoPreview()" class="absolute top-1 right-1 bg-red-950/80 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs border border-red-600 cursor-pointer">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-red-400 uppercase tracking-wider mb-1">Gece Hayaletinin Fısıltısı 👻</label>
+                    <input type="text" id="ghostText" placeholder="Örn: Bir gün buradaki ışıklar ikiniz için yanacak! ✨" class="w-full px-3.5 py-2.5 rounded-xl bg-red-950/40 border border-red-900/50 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-red-600 text-sm">
+                </div>
+
+                <div class="pt-2 flex gap-3">
+                    <button type="button" onclick="closeModal()" class="flex-1 py-2.5 rounded-xl border border-red-950 text-gray-300 text-sm font-semibold hover:bg-red-950/40 transition cursor-pointer">İptal</button>
+                    <button type="submit" id="saveMemorySubmitBtn" class="flex-1 py-2.5 rounded-xl bg-red-950 hover:bg-red-900 text-white text-sm font-semibold shadow-[0_0_15px_rgba(127,29,29,0.6)] transition border border-red-700/50 cursor-pointer">Kaydet 🖤</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Silme Onay Modalı -->
+    <div id="deleteModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-[2200] flex items-center justify-center p-4 hidden">
+        <div class="glass-panel rounded-2xl max-w-sm w-full p-5 text-center border border-red-900/60 shadow-2xl">
+            <i class="fa-solid fa-triangle-exclamation text-3xl text-red-500 mb-3 animate-pulse"></i>
+            <h3 class="text-base font-bold text-solid-blood mb-1">Noktayı Silmek İstiyor musun?</h3>
+            <p id="deleteTargetTitle" class="text-xs text-red-400 font-semibold mb-4 italic">"Anı Başlığı"</p>
+            <div class="flex gap-2">
+                <button onclick="closeDeleteModal()" class="flex-1 py-2 rounded-xl border border-red-950 text-gray-300 text-xs font-semibold hover:bg-red-950/40 transition cursor-pointer">Vazgeç</button>
+                <button onclick="confirmDeleteMemory()" class="flex-1 py-2 rounded-xl bg-red-900 hover:bg-red-800 text-white text-xs font-semibold shadow transition cursor-pointer">Sil</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const LOCAL_STORAGE_KEY = 'love_map_memories_v2';
+        const LOCAL_STORAGE_LETTER = 'love_map_letter_v2';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'love-map-shared-v1';
+
+        const DEFAULT_INITIAL_MEMORIES = [
+            {
+                id: 'mem_default_1',
+                type: 'past',
+                title: 'Galata Kulesi Altında İlk Sarılış 🖤',
+                date: '2023-10-29',
+                locationName: 'İstanbul / Galata',
+                note: 'Işıklar altında gözlerine ilk uzun uzun bakışım... Zamanın durduğu an.',
+                songTitle: 'Yüzyüzeyken Konuşuruz - Dinle Beni Bi',
+                photoUrl: '',
+                ghostText: 'Kulelerin şahidi olduğu sonsuz bir aşk fısıltısı...',
+                lat: 41.0256,
+                lng: 28.9744,
+                createdAt: '2023-10-29T20:00:00.000Z'
+            },
+            {
+                id: 'mem_default_2',
+                type: 'future',
+                title: 'Kapadokya Yıldızları Altında ✨',
+                date: '2025-06-15',
+                locationName: 'Nevşehir / Kapadokya',
+                note: 'Sessiz vadide el ele yıldızları izleyeceğimiz o büyülü gece...',
+                songTitle: 'Anıl Piyancı & Zeynep Bastık - Bırakman Doğru Mu',
+                photoUrl: '',
+                ghostText: 'Gökyüzündeki her yıldız senin için yanıyor...',
+                lat: 38.6431,
+                lng: 34.8289,
+                createdAt: '2024-01-01T12:00:00.000Z'
+            }
+        ];
+
+        const DEFAULT_LETTER_TEXT = "Sevgilim,\n\nBu harita, seninle adımladığımız her sokağın ve gelecekte kuracağımız tüm hayallerin pusulasıdır.\n\nSeni her saniye daha çok seviyorum... 🖤";
+
+        let map;
+        let markers = {};
+        let routePolyline = null;
+        let memories = [];
+        let letterText = "";
+        let currentFilter = 'all';
+        let ghostTimeout;
+        let memoryToDeleteId = null;
+        let isSidebarOpen = false;
+        let uploadedImageDataUrl = '';
+
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+        let isFirebaseActive = false;
+
+        // Web Audio Synthesizer for Wind & Ghost Ambience
+        let audioCtx = null;
+        let isMuted = false;
+        let windNoiseNode = null;
+        let windFilterNode = null;
+        let windGainNode = null;
+
+        function initAmbientAudio() {
+            if (audioCtx) return;
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+
+                const bufferSize = audioCtx.sampleRate * 3;
+                const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+                for (let i = 0; i < bufferSize; i++) {
+                    let white = Math.random() * 2 - 1;
+                    b0 = 0.99886 * b0 + white * 0.0555179;
+                    b1 = 0.99332 * b1 + white * 0.0750759;
+                    b2 = 0.96900 * b2 + white * 0.1538520;
+                    b3 = 0.86650 * b3 + white * 0.3104856;
+                    b4 = 0.55000 * b4 + white * 0.5329522;
+                    b5 = -0.7616 * b5 - white * 0.0168980;
+                    output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+                    output[i] *= 0.08;
+                    b6 = white * 0.115926;
+                }
+
+                windNoiseNode = audioCtx.createBufferSource();
+                windNoiseNode.buffer = noiseBuffer;
+                windNoiseNode.loop = true;
+
+                windFilterNode = audioCtx.createBiquadFilter();
+                windFilterNode.type = 'bandpass';
+                windFilterNode.frequency.value = 300;
+                windFilterNode.Q.value = 3.2;
+
+                setInterval(() => {
+                    if (!audioCtx || isMuted) return;
+                    const targetFreq = 140 + Math.random() * 380;
+                    if (windFilterNode) {
+                        windFilterNode.frequency.setTargetAtTime(targetFreq, audioCtx.currentTime, 1.8);
+                    }
+                }, 2200);
+
+                windGainNode = audioCtx.createGain();
+                windGainNode.gain.value = isMuted ? 0 : 0.15;
+
+                windNoiseNode.connect(windFilterNode);
+                windFilterNode.connect(windGainNode);
+                windGainNode.connect(audioCtx.destination);
+
+                windNoiseNode.start(0);
+            } catch (e) {
+                console.warn("Web Audio API warning:", e);
+            }
+        }
+
+        window.toggleSound = function() {
+            isMuted = !isMuted;
+            if (audioCtx) {
+                if (audioCtx.state === 'suspended' && !isMuted) {
+                    audioCtx.resume();
+                }
+                if (windGainNode) {
+                    windGainNode.gain.setTargetAtTime(isMuted ? 0 : 0.15, audioCtx.currentTime, 0.2);
+                }
+            } else if (!isMuted) {
+                initAmbientAudio();
+            }
+            updateSoundUI();
+        };
+
+        function updateSoundUI() {
+            const statusText = document.getElementById('soundStatusText');
+            const icon = document.getElementById('soundIcon');
+            const btn = document.getElementById('soundToggleBtn');
+            if (statusText) statusText.innerText = isMuted ? 'Kapalı 🔇' : 'Açık 🔊';
+            if (icon) icon.className = isMuted ? 'fa-solid fa-volume-xmark text-gray-500' : 'fa-solid fa-wind text-red-400';
+            if (btn) {
+                btn.className = isMuted 
+                    ? 'px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs shadow border border-gray-600 transition flex items-center gap-2 cursor-pointer'
+                    : 'px-3.5 py-2 rounded-xl bg-red-950 hover:bg-red-900 text-white font-bold text-xs shadow border border-red-700 transition flex items-center gap-2 cursor-pointer';
+            }
+        }
+
+        function playGhostSoundEffect() {
+            if (isMuted || !audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(380, audioCtx.currentTime + 0.7);
+                osc.frequency.exponentialRampToValueAtTime(160, audioCtx.currentTime + 1.5);
+
+                gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.09, audioCtx.currentTime + 0.4);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 1.5);
+            } catch (e) {}
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast-slide pointer-events-auto px-4 py-2.5 rounded-2xl shadow-2xl border text-xs font-bold flex items-center gap-2 ${
+                type === 'success' ? 'bg-red-950/95 text-rose-100 border-red-800' : 
+                type === 'error' ? 'bg-rose-950/95 text-red-200 border-red-600' : 
+                'bg-gray-900/95 text-gray-200 border-gray-700'
+            }`;
+            toast.innerHTML = `<i class="${type === 'success' ? 'fa-solid fa-heart text-red-500' : 'fa-solid fa-info-circle text-rose-400'}"></i> ${escapeHtml(message)}`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        function initMap() {
+            map = L.map('map', {
+                zoomControl: false
+            }).setView([39.0000, 35.5000], 6);
+
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+            // Esri World Dark Gray Canvas (Ücretsiz, API Key istemez)
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 16,
+                attribution: '&copy; Esri, DeLorme, NAVTEQ'
+            }).addTo(map);
+
+            map.on('click', (e) => {
+                openAddModal(e.latlng.lat, e.latlng.lng);
+            });
+
+            initFirebase();
+        }
+
+        async function initFirebase() {
+            try {
+                if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                    const firebaseConfig = JSON.parse(__firebase_config);
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        const cred = await signInWithCustomToken(auth, __initial_auth_token);
+                        currentUser = cred.user;
+                    } else {
+                        const cred = await signInAnonymously(auth);
+                        currentUser = cred.user;
+                    }
+
+                    if (currentUser) {
+                        isFirebaseActive = true;
+                        setupFirestoreSync();
+                        return;
+                    }
+                }
+            } catch (err) {
+                console.warn("Firebase pasif, yerel hafıza kullanılıyor:", err);
+            }
+
+            loadLocalStorageData();
+        }
+
+        function setupFirestoreSync() {
+            if (!db || !currentUser) return;
+
+            const memoriesRef = collection(db, 'artifacts', appId, 'public', 'data', 'memories');
+            onSnapshot(memoriesRef, (snapshot) => {
+                const fetched = [];
+                snapshot.forEach(doc => {
+                    fetched.push({ id: doc.id, ...doc.data() });
+                });
+                memories = fetched.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+                saveToLocalStorageOnly();
+                renderMarkers();
+                renderSidebar();
+            }, (error) => {
+                console.error("Firestore error:", error);
+            });
+
+            const letterDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'letter', 'mainLetter');
+            onSnapshot(letterDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    letterText = docSnap.data().content || "";
+                    const el = document.getElementById('letterContent');
+                    if (el) el.value = letterText;
+                    localStorage.setItem(LOCAL_STORAGE_LETTER, letterText);
+                }
+            });
+        }
+
+        function loadLocalStorageData() {
+            const savedMem = localStorage.getItem(LOCAL_STORAGE_KEY);
+            memories = savedMem ? JSON.parse(savedMem) : DEFAULT_INITIAL_MEMORIES;
+            
+            const savedLet = localStorage.getItem(LOCAL_STORAGE_LETTER);
+            letterText = savedLet ? savedLet : DEFAULT_LETTER_TEXT;
+            
+            const el = document.getElementById('letterContent');
+            if (el) el.value = letterText;
+            
+            renderMarkers();
+            renderSidebar();
+        }
+
+        function saveToLocalStorageOnly() {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(memories));
+                localStorage.setItem(LOCAL_STORAGE_LETTER, letterText);
+            } catch (e) {
+                console.error("LocalStorage hafıza sınırı:", e);
+                showToast("Tarayıcı depolama alanı doldu! Eski fotoğrafları veya noktaları temizleyebilirsiniz.", "error");
+            }
+        }
+
+        function renderMarkers() {
+            if (!map) return;
+
+            // Clear existing markers
+            Object.values(markers).forEach(m => map.removeLayer(m));
+            markers = {};
+
+            if (routePolyline) {
+                map.removeLayer(routePolyline);
+                routePolyline = null;
+            }
+
+            const searchVal = (document.getElementById('searchInput')?.value || '').toLowerCase();
+
+            const filtered = memories.filter(mem => {
+                const matchesFilter = currentFilter === 'all' || mem.type === currentFilter;
+                const matchesSearch = !searchVal || 
+                    (mem.title && mem.title.toLowerCase().includes(searchVal)) ||
+                    (mem.note && mem.note.toLowerCase().includes(searchVal)) ||
+                    (mem.locationName && mem.locationName.toLowerCase().includes(searchVal)) ||
+                    (mem.songTitle && mem.songTitle.toLowerCase().includes(searchVal));
+                return matchesFilter && matchesSearch;
+            });
+
+            const coords = [];
+
+            filtered.forEach(mem => {
+                const isPast = mem.type === 'past';
+                const iconHtml = `<div class="${isPast ? 'custom-pin-past' : 'custom-pin-future'}"><i class="${isPast ? 'fa-solid fa-heart' : 'fa-solid fa-star'}"></i></div>`;
+                
+                const customIcon = L.divIcon({
+                    html: iconHtml,
+                    className: 'custom-leaflet-pin',
+                    iconSize: [38, 38],
+                    iconAnchor: [19, 38],
+                    popupAnchor: [0, -36]
+                });
+
+                const marker = L.marker([mem.lat, mem.lng], { icon: customIcon }).addTo(map);
+
+                const popupHtml = `
+                    <div class="space-y-2.5">
+                        ${mem.photoUrl ? `<div class="rounded-xl overflow-hidden border border-red-900/60 max-h-36 bg-black"><img src="${escapeHtml(mem.photoUrl)}" class="w-full h-full object-cover"></div>` : ''}
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${isPast ? 'bg-red-950/80 text-red-300 border-red-800/60' : 'bg-purple-950/80 text-purple-200 border-purple-800/60'} uppercase tracking-wider">
+                                ${isPast ? '🖤 Yaşanmış Anı' : '✨ Gelecek Hayali'}
+                            </span>
+                            <span class="text-[11px] text-gray-400 font-semibold"><i class="fa-regular fa-calendar-days text-red-400"></i> ${escapeHtml(mem.date)}</span>
+                        </div>
+
+                        <h3 class="font-gothic text-base font-extrabold text-solid-blood leading-tight">${escapeHtml(mem.title)}</h3>
+
+                        ${mem.locationName ? `<p class="text-xs text-red-300/80 font-medium flex items-center gap-1"><i class="fa-solid fa-location-dot text-red-500"></i> ${escapeHtml(mem.locationName)}</p>` : ''}
+
+                        <p class="text-xs text-gray-200 italic leading-relaxed bg-red-950/20 p-2.5 rounded-xl border border-red-950/60 popup-note-scroll pr-1.5 select-text">${escapeHtml(mem.note)}</p>
+
+                        ${mem.songTitle ? `
+                            <div class="flex items-center gap-2 p-2 rounded-xl bg-red-950/50 border border-red-900/40 text-xs text-rose-200">
+                                <i class="fa-solid fa-music text-red-400 animate-bounce"></i>
+                                <span class="font-medium truncate">${escapeHtml(mem.songTitle)}</span>
+                            </div>
+                        ` : ''}
+
+                        ${mem.ghostText ? `
+                            <div class="text-[11px] italic text-rose-300/90 bg-black/40 p-2 rounded-lg border border-red-900/30 flex items-center gap-1.5">
+                                <i class="fa-solid fa-ghost text-red-500 text-xs"></i>
+                                <span>"${escapeHtml(mem.ghostText)}"</span>
+                            </div>
+                        ` : ''}
+
+                        <div class="pt-1 flex gap-2 border-t border-red-950/80 justify-end">
+                            <button onclick="openEditModal('${mem.id}')" class="px-2.5 py-1 rounded-lg bg-red-950 hover:bg-red-900 text-rose-200 text-xs font-bold border border-red-800/60 transition cursor-pointer">
+                                <i class="fa-solid fa-pen-to-square"></i> Düzenle
+                            </button>
+                            <button onclick="requestDeleteMemory('${mem.id}')" class="px-2.5 py-1 rounded-lg bg-rose-950 hover:bg-rose-900 text-red-300 text-xs font-bold border border-rose-800/60 transition cursor-pointer">
+                                <i class="fa-solid fa-trash"></i> Sil
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                marker.bindPopup(popupHtml);
+                marker.on('click', () => {
+                    map.flyTo([mem.lat, mem.lng], 11, { duration: 1.2 });
+                });
+
+                markers[mem.id] = marker;
+                coords.push([mem.lat, mem.lng]);
+            });
+
+            // Draw route line connecting memories
+            if (coords.length > 1) {
+                routePolyline = L.polyline(coords, {
+                    color: '#991b1b',
+                    weight: 2.5,
+                    opacity: 0.65,
+                    dashArray: '6, 8'
+                }).addTo(map);
+            }
+        }
+
+        function renderSidebar() {
+            const container = document.getElementById('memoryList');
+            const countEl = document.getElementById('memoryCount');
+            const badgeEl = document.getElementById('headerMemoryBadge');
+
+            if (!container) return;
+
+            const searchVal = (document.getElementById('searchInput')?.value || '').toLowerCase();
+
+            const filtered = memories.filter(mem => {
+                const matchesFilter = currentFilter === 'all' || mem.type === currentFilter;
+                const matchesSearch = !searchVal || 
+                    (mem.title && mem.title.toLowerCase().includes(searchVal)) ||
+                    (mem.note && mem.note.toLowerCase().includes(searchVal)) ||
+                    (mem.locationName && mem.locationName.toLowerCase().includes(searchVal)) ||
+                    (mem.songTitle && mem.songTitle.toLowerCase().includes(searchVal));
+                return matchesFilter && matchesSearch;
+            });
+
+            if (countEl) countEl.innerText = filtered.length;
+            if (badgeEl) badgeEl.innerText = memories.length;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 px-4 text-gray-400">
+                        <i class="fa-solid fa-ghost text-3xl text-red-900/60 mb-2 block"></i>
+                        <p class="text-xs font-semibold">Henüz eklenmiş bir anı bulunamadı.</p>
+                        <p class="text-[10px] text-gray-500 mt-1">Haritaya tıklayarak ilk anını oluşturabilirsin!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(mem => {
+                const isPast = mem.type === 'past';
+                return `
+                    <div class="glass-panel glass-panel-hover p-3 rounded-2xl transition duration-200 relative group border border-red-950/80">
+                        <div class="flex items-start justify-between gap-2 mb-1">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md border ${isPast ? 'bg-red-950/80 text-red-300 border-red-800/60' : 'bg-purple-950/80 text-purple-200 border-purple-800/60'} uppercase tracking-wider">
+                                ${isPast ? '🖤 Geçmiş' : '✨ Gelecek'}
+                            </span>
+                            <span class="text-[10px] text-gray-400 font-semibold">${escapeHtml(mem.date)}</span>
+                        </div>
+
+                        <h4 class="font-gothic text-sm font-bold text-rose-100 group-hover:text-red-400 transition mb-1 leading-snug">${escapeHtml(mem.title)}</h4>
+
+                        ${mem.locationName ? `<p class="text-[11px] text-red-300/80 font-medium mb-1.5 flex items-center gap-1"><i class="fa-solid fa-location-dot text-red-500 text-[10px]"></i> ${escapeHtml(mem.locationName)}</p>` : ''}
+
+                        <p class="text-xs text-gray-300/90 line-clamp-2 italic mb-2 leading-relaxed">${escapeHtml(mem.note)}</p>
+
+                        <div class="flex items-center justify-between pt-2 border-t border-red-950/60 text-xs">
+                            <button onclick="focusOnMemory('${mem.id}', ${mem.lat}, ${mem.lng})" class="text-red-400 hover:text-red-300 font-bold flex items-center gap-1 cursor-pointer">
+                                <i class="fa-solid fa-eye text-xs"></i> Haritada Göster
+                            </button>
+                            <div class="flex gap-1.5">
+                                <button onclick="openEditModal('${mem.id}')" class="text-gray-400 hover:text-rose-200 p-1 transition cursor-pointer" title="Düzenle">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button onclick="requestDeleteMemory('${mem.id}')" class="text-gray-400 hover:text-red-400 p-1 transition cursor-pointer" title="Sil">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.focusOnMemory = function(id, lat, lng) {
+            if (map) {
+                map.flyTo([lat, lng], 12, { duration: 1.2 });
+                if (markers[id]) {
+                    setTimeout(() => markers[id].openPopup(), 1200);
+                }
+            }
+            toggleSidebar(false);
+        };
+
+        function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxWidth || height > maxHeight) {
+                            if (width / height > maxWidth / maxHeight) {
+                                height = Math.round((height * maxWidth) / width);
+                                width = maxWidth;
+                            } else {
+                                width = Math.round((width * maxHeight) / height);
+                                height = maxHeight;
+                            }
+                        }
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                        resolve(compressedDataUrl);
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        const photoFileInput = document.getElementById('photoFileInput');
+        if (photoFileInput) {
+            photoFileInput.addEventListener('change', async (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                try {
+                    showToast('Fotoğraf optimize ediliyor...', 'info');
+                    uploadedImageDataUrl = await compressImage(file, 800, 800, 0.7);
+                    
+                    const previewContainer = document.getElementById('photoPreviewContainer');
+                    const previewImg = document.getElementById('photoPreviewImg');
+                    if (previewImg && previewContainer) {
+                        previewImg.src = uploadedImageDataUrl;
+                        previewContainer.classList.remove('hidden');
+                    }
+                } catch (err) {
+                    console.error("Fotoğraf sıkıştırma hatası:", err);
+                    showToast('Fotoğraf işlenirken bir hata oluştu.', 'error');
+                }
+            });
+        }
+
+        window.clearPhotoPreview = function() {
+            uploadedImageDataUrl = '';
+            const fileInp = document.getElementById('photoFileInput');
+            const urlInp = document.getElementById('imageUrl');
+            if (fileInp) fileInp.value = '';
+            if (urlInp) urlInp.value = '';
+            const previewContainer = document.getElementById('photoPreviewContainer');
+            if (previewContainer) previewContainer.classList.add('hidden');
+        };
+
+        window.openAddModal = function(lat, lng) {
+            document.getElementById('editingId').value = '';
+            document.getElementById('lat').value = lat;
+            document.getElementById('lng').value = lng;
+            document.getElementById('title').value = '';
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('locationName').value = '';
+            document.getElementById('note').value = '';
+            document.getElementById('songTitle').value = '';
+            document.getElementById('ghostText').value = '';
+            document.getElementById('modalHeaderTitle').innerHTML = `<i class="fa-solid fa-map-pin text-red-500"></i> Şehre Özel Anı & Mektup Ekle`;
+            document.getElementById('saveMemorySubmitBtn').innerText = 'Kaydet 🖤';
+            window.clearPhotoPreview();
+            document.getElementById('addMemoryModal').classList.remove('hidden');
+        };
+
+        window.openEditModal = function(id) {
+            const mem = memories.find(m => m.id === id);
+            if (!mem) return;
+
+            document.getElementById('editingId').value = mem.id;
+            document.getElementById('lat').value = mem.lat;
+            document.getElementById('lng').value = mem.lng;
+            document.getElementById('title').value = mem.title || '';
+            document.getElementById('date').value = mem.date || '';
+            document.getElementById('locationName').value = mem.locationName || '';
+            document.getElementById('note').value = mem.note || '';
+            document.getElementById('songTitle').value = mem.songTitle || '';
+            document.getElementById('ghostText').value = mem.ghostText || '';
+            document.getElementById('imageUrl').value = mem.photoUrl || '';
+
+            const radios = document.getElementsByName('memoryType');
+            radios.forEach(r => {
+                r.checked = r.value === mem.type;
+            });
+
+            if (mem.photoUrl) {
+                uploadedImageDataUrl = mem.photoUrl;
+                const previewContainer = document.getElementById('photoPreviewContainer');
+                const previewImg = document.getElementById('photoPreviewImg');
+                if (previewImg && previewContainer) {
+                    previewImg.src = mem.photoUrl;
+                    previewContainer.classList.remove('hidden');
+                }
+            } else {
+                window.clearPhotoPreview();
+            }
+
+            document.getElementById('modalHeaderTitle').innerHTML = `<i class="fa-solid fa-pen-to-square text-red-500"></i> Anıyı Düzenle`;
+            document.getElementById('saveMemorySubmitBtn').innerText = 'Güncelle 🖤';
+            document.getElementById('addMemoryModal').classList.remove('hidden');
+        };
+
+        window.closeModal = function() { 
+            document.getElementById('addMemoryModal').classList.add('hidden'); 
+            window.clearPhotoPreview();
+        };
+
+        window.openSettingsModal = function() { document.getElementById('settingsModal').classList.remove('hidden'); };
+        window.closeSettingsModal = function() { document.getElementById('settingsModal').classList.add('hidden'); };
+
+        window.openLetterModal = function() { document.getElementById('letterModal').classList.remove('hidden'); };
+        window.closeLetterModal = function() { document.getElementById('letterModal').classList.add('hidden'); };
+
+        window.toggleSidebar = function(forceState) {
+            const sidebar = document.getElementById('sidebar');
+            isSidebarOpen = forceState !== undefined ? forceState : !isSidebarOpen;
+            if (isSidebarOpen) {
+                sidebar.classList.remove('-translate-x-full');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+            }
+        };
+
+        window.setFilterType = function(type) {
+            currentFilter = type;
+            ['all', 'past', 'future'].forEach(t => {
+                const btn = document.getElementById(`filterTab-${t}`);
+                if (btn) {
+                    if (t === type) {
+                        btn.className = "flex-1 py-1.5 rounded-lg bg-red-950 text-white border border-red-800/60 text-center transition cursor-pointer";
+                    } else {
+                        btn.className = "flex-1 py-1.5 rounded-lg bg-red-950/40 text-rose-300 border border-transparent hover:border-red-800/40 text-center transition flex items-center justify-center gap-1 cursor-pointer";
+                    }
+                }
+            });
+            renderMarkers();
+            renderSidebar();
+        };
+
+        window.filterMemories = function() {
+            renderMarkers();
+            renderSidebar();
+        };
+
+        const memoryForm = document.getElementById('memoryForm');
+        if (memoryForm) {
+            memoryForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const editingId = document.getElementById('editingId').value;
+                const type = document.querySelector('input[name="memoryType"]:checked').value;
+                const title = document.getElementById('title').value.trim();
+                const date = document.getElementById('date').value;
+                const locationName = document.getElementById('locationName').value.trim();
+                const note = document.getElementById('note').value.trim();
+                const songTitle = document.getElementById('songTitle').value.trim();
+                const imageUrlInp = document.getElementById('imageUrl').value.trim();
+                const ghostText = document.getElementById('ghostText').value.trim();
+
+                const lat = parseFloat(document.getElementById('lat').value) || 39.0;
+                const lng = parseFloat(document.getElementById('lng').value) || 35.5;
+
+                const photoUrl = uploadedImageDataUrl || imageUrlInp || '';
+
+                if (editingId) {
+                    const index = memories.findIndex(m => m.id === editingId);
+                    if (index !== -1) {
+                        const updatedMem = {
+                            ...memories[index],
+                            type,
+                            title,
+                            date,
+                            locationName,
+                            note,
+                            songTitle,
+                            photoUrl,
+                            ghostText,
+                            lat,
+                            lng
+                        };
+
+                        if (isFirebaseActive && db) {
+                            try {
+                                const memRef = doc(db, 'artifacts', appId, 'public', 'data', 'memories', editingId);
+                                await setDoc(memRef, updatedMem);
+                            } catch (err) {
+                                console.error("Firebase update error:", err);
+                            }
+                        }
+
+                        memories[index] = updatedMem;
+                        saveToLocalStorageOnly();
+                        showToast('Anı başarıyla güncellendi! 🖤', 'success');
+                    }
+                } else {
+                    const newMem = {
+                        id: 'mem_' + Date.now(),
+                        type,
+                        title,
+                        date,
+                        locationName,
+                        note,
+                        songTitle,
+                        photoUrl,
+                        ghostText,
+                        lat,
+                        lng,
+                        createdAt: new Date().toISOString()
+                    };
+
+                    if (isFirebaseActive && db) {
+                        try {
+                            const memRef = doc(db, 'artifacts', appId, 'public', 'data', 'memories', newMem.id);
+                            await setDoc(memRef, newMem);
+                        } catch (err) {
+                            console.error("Firebase save error:", err);
+                            memories.unshift(newMem);
+                            saveToLocalStorageOnly();
+                        }
+                    } else {
+                        memories.unshift(newMem);
+                        saveToLocalStorageOnly();
+                    }
+
+                    showToast('Yeni anı başarıyla eklendi! 🖤', 'success');
+                }
+
+                renderMarkers();
+                renderSidebar();
+                closeModal();
+
+                if (ghostText) {
+                    showGhost(ghostText, "Fısıltı ✨");
+                }
+            });
+        }
+
+        window.requestDeleteMemory = function(id) {
+            const target = memories.find(m => m.id === id);
+            if (!target) return;
+            memoryToDeleteId = id;
+            document.getElementById('deleteTargetTitle').innerText = `"${target.title}"`;
+            document.getElementById('deleteModal').classList.remove('hidden');
+        };
+
+        window.closeDeleteModal = function() {
+            memoryToDeleteId = null;
+            document.getElementById('deleteModal').classList.add('hidden');
+        };
+
+        window.confirmDeleteMemory = async function() {
+            if (!memoryToDeleteId) return;
+
+            if (isFirebaseActive && db) {
+                try {
+                    const memRef = doc(db, 'artifacts', appId, 'public', 'data', 'memories', memoryToDeleteId);
+                    await deleteDoc(memRef);
+                } catch (err) {
+                    console.error("Firebase delete error:", err);
+                }
+            }
+
+            memories = memories.filter(m => m.id !== memoryToDeleteId);
+            saveToLocalStorageOnly();
+            renderMarkers();
+            renderSidebar();
+            closeDeleteModal();
+            showToast('Nokta silindi.', 'info');
+        };
+
+        window.saveLetter = async function() {
+            const content = document.getElementById('letterContent').value;
+            letterText = content;
+
+            if (isFirebaseActive && db) {
+                try {
+                    const letterDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'letter', 'mainLetter');
+                    await setDoc(letterDocRef, { content, updatedAt: new Date().toISOString() });
+                } catch (err) {
+                    console.error("Letter save error:", err);
+                }
+            }
+            saveToLocalStorageOnly();
+
+            const status = document.getElementById('letterSavedStatus');
+            if (status) {
+                status.classList.remove('hidden');
+                setTimeout(() => status.classList.add('hidden'), 2500);
+            }
+            showToast('Mektubunuz kaydedildi 💌', 'success');
+        };
+
+        window.exportJsonBackup = function() {
+            const backupData = {
+                appId,
+                version: "2.0",
+                exportedAt: new Date().toISOString(),
+                letterText,
+                memories
+            };
+
+            const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `TheMapOfUs_Yedek_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Yedek JSON dosyası indirildi! 📦', 'success');
+        };
+
+        window.importJsonBackup = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.memories && Array.isArray(data.memories)) {
+                        memories = data.memories;
+                        if (data.letterText) {
+                            letterText = data.letterText;
+                            document.getElementById('letterContent').value = letterText;
+                        }
+
+                        if (isFirebaseActive && db) {
+                            for (const mem of memories) {
+                                const memRef = doc(db, 'artifacts', appId, 'public', 'data', 'memories', mem.id);
+                                await setDoc(memRef, mem);
+                            }
+                            if (letterText) {
+                                const letterDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'letter', 'mainLetter');
+                                await setDoc(letterDocRef, { content: letterText, updatedAt: new Date().toISOString() });
+                            }
+                        }
+
+                        saveToLocalStorageOnly();
+                        renderMarkers();
+                        renderSidebar();
+                        closeSettingsModal();
+                        showToast('Yedek başarıyla yüklendi! 🖤', 'success');
+                    } else {
+                        showToast('Geçersiz yedek dosyası!', 'error');
+                    }
+                } catch (err) {
+                    showToast('Yedek okunamadı!', 'error');
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        window.downloadSelfContainedHtml = function() {
+            const cloneDoc = document.documentElement.cloneNode(true);
+
+            const introEl = cloneDoc.querySelector('#introOverlay');
+            if (introEl) {
+                introEl.classList.remove('hidden');
+                introEl.style.opacity = '1';
+                introEl.style.display = 'flex';
+            }
+
+            ['addMemoryModal', 'settingsModal', 'letterModal', 'deleteModal', 'ghostOverlay'].forEach(id => {
+                const el = cloneDoc.querySelector('#' + id);
+                if (el) el.classList.add('hidden');
+            });
+
+            const sidebar = cloneDoc.querySelector('#sidebar');
+            if (sidebar) sidebar.classList.add('-translate-x-full');
+
+            const scriptTag = document.createElement('script');
+            scriptTag.textContent = `
+                window.addEventListener('DOMContentLoaded', () => {
+                    try {
+                        localStorage.setItem('${LOCAL_STORAGE_KEY}', JSON.stringify(${JSON.stringify(memories)}));
+                        localStorage.setItem('${LOCAL_STORAGE_LETTER}', ${JSON.stringify(letterText)});
+                    } catch(e) {
+                        console.error('Veri yükleme hatası:', e);
+                    }
+                });
+            `;
+            cloneDoc.querySelector('head').appendChild(scriptTag);
+
+            const blob = new Blob(['<!DOCTYPE html>\n' + cloneDoc.outerHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `TheMapOfUs_Cevrimdisi.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Çevrimdışı HTML indirildi! 🌐', 'success');
+        };
+
+        function showGhost(text, tag = 'Fısıltı') {
+            const overlay = document.getElementById('ghostOverlay');
+            const msg = document.getElementById('ghostMessage');
+            const tagEl = document.getElementById('ghostTag');
+
+            if (msg) msg.innerText = `"${text}" 👻🖤`;
+            if (tagEl) tagEl.innerText = tag;
+            if (overlay) overlay.classList.remove('hidden');
+
+            playGhostSoundEffect();
+
+            clearTimeout(ghostTimeout);
+            ghostTimeout = setTimeout(() => {
+                hideGhost();
+            }, 6500);
+        }
+
+        window.hideGhost = function() {
+            const overlay = document.getElementById('ghostOverlay');
+            if (overlay) overlay.classList.add('hidden');
+        };
+
+        window.ghostReact = function() {
+            const whispers = [
+                "Seninle adımlanan her sokak aşk kokuyor...",
+                "Haritadaki her yıldız gelecekteki bir tebessümümüz!",
+                "Seni her saniye biraz daha çok seviyorum...",
+                "Burası bizim dünyamız, sadece ikimizin!"
+            ];
+            const randomMsg = whispers[Math.floor(Math.random() * whispers.length)];
+            showGhost(randomMsg, "Sana Özel");
+        };
+
+        function createFloatingGhosts() {
+            const container = document.getElementById('ghostBg');
+            if (!container) return;
+            container.innerHTML = '';
+
+            for (let i = 0; i < 7; i++) {
+                const ghost = document.createElement('div');
+                ghost.className = 'floating-ghost-item';
+                const left = Math.random() * 90;
+                const delay = Math.random() * 8;
+                const duration = 14 + Math.random() * 12;
+                ghost.style.left = `${left}%`;
+                ghost.style.animationDelay = `${delay}s`;
+                ghost.style.animationDuration = `${duration}s`;
+
+                ghost.innerHTML = `
+                    <svg width="28" height="28" viewBox="0 0 200 200" fill="none">
+                        <path d="M100 20C60 20 40 50 40 90V160C40 170 50 175 58 168C65 162 75 162 82 168C90 175 100 175 108 168C115 162 125 162 132 168C140 175 150 175 158 168C165 160 170 165 170 155V90C170 50 140 20 100 20Z" fill="#7f1d1d"/>
+                    </svg>
+                `;
+                container.appendChild(ghost);
+            }
+        }
+
+        window.dismissIntro = function() {
+            initAmbientAudio();
+            const intro = document.getElementById('introOverlay');
+            if (intro) {
+                intro.style.opacity = '0';
+                setTimeout(() => intro.classList.add('hidden'), 700);
+            }
+            showGhost("Aşk dolu haritanıza hoş geldiniz!", "Seni Çok Seviyorum");
+        };
+
+        window.triggerIntroHearts = function() {
+            playGhostSoundEffect();
+            confetti({
+                particleCount: 50,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#7f1d1d', '#991b1b', '#fca5a5']
+            });
+        };
+
+        window.zoomToTurkey = function() {
+            if (map) map.flyTo([39.0000, 35.5000], 6);
+        };
+
+        window.triggerAddPinCenter = function() {
+            if (!map) return;
+            const center = map.getCenter();
+            openAddModal(center.lat, center.lng);
+        };
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        window.onload = function() {
+            initMap();
+            createFloatingGhosts();
+        };
+    </script>
+</body>
+</html>
